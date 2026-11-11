@@ -7,7 +7,7 @@ O Pico liga-se ao Wi-Fi, acerta a hora por NTP e serve uma página com o estado 
 > As piadas são do Galo Zé, os números não.
 
 > [!WARNING]
-> Este é um projeto pessoal e de hobby. Os dados apresentados **não têm qualquer garantia** e **não devem ser usados para tomar decisões**. Lê o **Aviso legal** no fim deste ficheiro.
+> Este é um projeto pessoal **feito para divertir**. Os dados apresentados **não têm qualquer garantia** e **não devem ser usados para tomar decisões**. Lê o **Aviso legal** no fim deste ficheiro.
 
 ---
 
@@ -235,7 +235,7 @@ Nenhuma destas APIs precisa de chave.
 
 ## ⚖️ Aviso legal
 
-O Galo Meteo é um **projeto pessoal, educativo e sem fins comerciais**, feito para aprender e para usar em casa.
+O Galo Meteo é um **projeto pessoal, lúdico e sem fins comerciais**. Foi feito para entreter e divertir quem o usa, e não para servir de ferramenta meteorológica.
 
 - **Dados sem garantia.** A informação vem de serviços de terceiros (IPMA, Open-Meteo/CAMS) e é processada e apresentada por este software de forma simplificada. Pode estar incompleta, desatualizada, mal interpretada ou simplesmente errada, por falhas de rede, alterações nas APIs, erros no código ou na hora do dispositivo. Não existe qualquer garantia de exatidão, de disponibilidade ou de atualidade.
 - **Não usar em contexto profissional ou crítico.** Não uses este projeto em atividades profissionais nem em decisões que afetem a segurança de pessoas ou bens. Isto inclui, entre outras, aviação, navegação, atividades de montanha ou no mar, agricultura, proteção civil, gestão de eventos e saúde.
