@@ -438,6 +438,7 @@ const NDIAS = 5;                        // hoje + 4 dias já previstos
 let locais = [], local = null, tiposTempo = {};
 let tempo = null, arDados = null, ipmaDias = null, avisosLista = null, avisosAtivos = [], piadas = [], iPiada = 0;
 let diaSel = 0;                         // 0 = agora; 1..4 = dias de previsão
+let dataSel = null;                     // data do dia escolhido ("AAAA-MM-DD"); null = agora
 const pref = { ler(){ try { return localStorage.getItem("meteo_local"); } catch(e){ return null; } },
                gravar(v){ try { localStorage.setItem("meteo_local", v); } catch(e){} } };
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -479,6 +480,7 @@ function escolher() {
 
 function selecionarDia(k) {
   diaSel = k;
+  dataSel = k && tempo ? tempo.daily.time[k] : null;
   desenhar();
 }
 
@@ -572,7 +574,11 @@ function vistaDe(k) {
 }
 
 function desenhar() {
-  diaSel = tempo ? Math.min(diaSel, NDIAS - 1) : 0;
+  // O dia escolhido é seguido pela data, não pela posição: depois da meia-noite,
+  // "amanhã" passa a ser hoje (volta a "Agora") e os outros dias recuam uma casa.
+  const k = tempo && dataSel ? tempo.daily.time.indexOf(dataSel) : 0;
+  diaSel = k > 0 && k < NDIAS ? k : 0;
+  if (!diaSel) dataSel = null;
   desenharChips();
   const v = tempo ? vistaDe(diaSel) : null;
   if (v) { desenharHeroi(v); desenharTiles(v); desenharHoras(v); desenharSol(v); desenharVestir(v); }
