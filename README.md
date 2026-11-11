@@ -7,7 +7,7 @@ O Pico liga-se ao Wi-Fi, acerta a hora por NTP e serve uma página com o estado 
 > As piadas são do Galo Zé, os números não.
 
 > [!WARNING]
-> Este é um projeto pessoal **feito para divertir**. Os dados apresentados **não têm qualquer garantia** e **não devem ser usados para tomar decisões**. Lê o **Aviso legal** no fim deste ficheiro.
+> Este é um projeto pessoal **feito para divertir**. Os dados apresentados **não têm qualquer garantia** e **não devem ser usados em contexto profissional**. Lê o **Aviso legal** no fim deste ficheiro.
 
 ---
 
