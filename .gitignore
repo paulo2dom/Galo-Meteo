@@ -1,0 +1,6 @@
+# Credenciais do Wi-Fi: nunca publicar
+secrets.py
+
+# Ficheiros gerados
+__pycache__/
+*.mpy
