@@ -14,15 +14,16 @@ O Pico liga-se ao Wi-Fi, acerta a hora por NTP e serve uma página com o estado 
 ## ✨ Funcionalidades
 
 - **Relógio** sincronizado por NTP (`pt.pool.ntp.org`), na hora de Portugal continental e com mudança automática para a hora de verão.
-- **Escolha do dia**: no topo há uma barra com "Agora" e os 4 dias seguintes. Também se pode tocar num cartão da previsão a 5 dias. Toda a página passa a mostrar esse dia: o Galo Zé, o fundo, o carimbo, os detalhes, as horas, o sol e a lua, o ar, a roupa, os avisos e as piadas.
+- **Escolha do dia**: no topo há uma barra com "Agora" e os 4 dias seguintes. Também se pode tocar num cartão da previsão a 5 dias. Toda a página passa a mostrar esse dia: o Galo Zé, o fundo, o carimbo, os detalhes, as horas, o sol e a lua, o ar, a roupa, os avisos e as piadas. O dia escolhido é seguido pela data: depois da meia-noite, "Amanhã" passa a "Agora" e os outros dias recuam uma posição na barra.
+- **Atualização automática**: os dados meteorológicos são atualizados a cada 5 minutos e a hora é acertada com o Pico a cada minuto, sem recarregar a página.
 - **Mascote animada (SVG)**: o Galo Zé põe óculos de sol, guarda-chuva, gorro e cachecol, touca de dormir, etc., consoante o tempo. A seta do cata-vento aponta para a direção real do vento.
 - **Fundo dinâmico**: muda de cor com o céu e a temperatura (calor, sol, ameno, nuvens, frio, chuva, neve, nevoeiro, trovoada, noite).
-- **Avisos do IPMA** (amarelo, laranja, vermelho) para a zona escolhida.
-- **Hoje em detalhe**: vento e rajadas, humidade, ponto de orvalho, pressão, visibilidade, nebulosidade, índice UV e precipitação.
-- **Hora a hora**: as próximas 24 h, com um gráfico de temperatura e de probabilidade de chuva.
+- **Avisos do IPMA** (amarelo, laranja, vermelho) para a zona e o dia escolhidos.
+- **Em detalhe**: vento e rajadas, humidade, ponto de orvalho, pressão, visibilidade, nebulosidade, índice UV e precipitação. Em "Agora" mostra os valores atuais. Nos outros dias mostra os máximos, as médias e os totais previstos.
+- **Hora a hora**: em "Agora", as próximas 24 h; nos outros dias, das 00h às 23h. Inclui um gráfico de temperatura e de probabilidade de chuva.
 - **Sol e Lua**: nascer e pôr do sol, a posição do sol no céu, a duração do dia e a fase da lua.
-- **Qualidade do ar e pólen**: índice europeu (AQI), PM2.5, PM10 e pólen de oliveira, gramíneas e bétula (CAMS via Open-Meteo).
-- **O que vestir**: sugestões para as próximas 12 h.
+- **Qualidade do ar e pólen**: índice europeu (AQI), PM2.5, PM10 e pólen de oliveira, gramíneas e bétula (CAMS via Open-Meteo). Nos outros dias mostra o máximo previsto.
+- **O que vestir**: sugestões para as próximas 12 h ou, nos outros dias, das 8h às 22h.
 - **Previsão a 5 dias** do IPMA.
 - **Escolha do local**: todos os distritos e ilhas do IPMA. A escolha fica guardada no browser e, por omissão, o local é Lisboa.
 - Funciona em telemóvel e computador, e respeita a opção `prefers-reduced-motion`.
@@ -87,9 +88,11 @@ flowchart LR
 
 O browser tenta sempre chegar diretamente à API do IPMA. Só quando o pedido é bloqueado (por CORS ou por falta de rede) é que passa a usar o Pico como ponte. Nesse caso, o rodapé da página mostra "IPMA através do Pico".
 
+Mudar de dia não gera pedidos novos. A página já tem a previsão dos 5 dias e só volta a desenhar as secções. Os pedidos às APIs repetem-se a cada 5 minutos, e o pedido `/hora` ao Pico a cada minuto.
+
 ## 🧰 Material necessário
 
-- Raspberry Pi Pico 2 W (ou Pico W)
+- Raspberry Pi Pico 2 W (o Pico W original tem menos RAM e não foi testado com esta versão)
 - Cabo micro-USB
 - Rede Wi-Fi de 2,4 GHz com acesso à Internet
 
@@ -115,8 +118,8 @@ Não precisa de sensores: todos os dados vêm das APIs públicas.
 5. Na consola série aparece o endereço:
    ```
    A ligar ao Wi-Fi...
-   Hora sincronizada
    Ligado! Abre http://192.168.1.42 no browser
+   Hora sincronizada
    ```
 6. Abrir esse endereço no browser. Em muitas redes, também funciona <http://meteo.local>.
 
@@ -134,6 +137,8 @@ Como o ficheiro se chama `main.py`, o Pico arranca a estação sozinho sempre qu
 | Intervalo de atualização   | `setInterval(atualizarTempo, 5 * 60 * 1000)` (5 minutos)                   |
 | Ressincronização NTP       | `time.time() - ultima_sync > 3600` (1 hora)                                 |
 | Cores e tema               | Variáveis CSS em `:root` dentro da string `HTML`                            |
+| Limiares dos modos         | Funções `ceuDe()` (fundo), `humor()` (carimbo), `modosGalo()` (acessórios) e `legendaDia()` (etiquetas dos 5 dias) |
+| Espera pelo pedido HTTP    | `cliente.settimeout(2)` no ciclo do servidor (2 segundos)                   |
 
 ## 📡 Fontes de dados
 
@@ -147,9 +152,20 @@ Nenhuma destas APIs precisa de chave.
 ## 📝 Notas e limitações
 
 - **TLS sem verificação**: o proxy do IPMA não verifica o certificado do servidor, porque o Pico não tem autoridades de certificação (CAs) carregadas. É aceitável para dados meteorológicos públicos.
-- **Servidor simples**: atende um pedido de cada vez, o que chega perfeitamente para uso doméstico.
+- **Servidor simples**: atende um pedido de cada vez, o que chega perfeitamente para uso doméstico. Os browsers abrem ligações "de reserva" que muitas vezes não enviam nada. O Pico espera no máximo 2 s pelo pedido e fecha essas ligações em silêncio, para não atrasar os pedidos verdadeiros.
+- **Previsão dos dias seguintes**: os modos e os detalhes de cada dia são resumos (máximos, médias e totais) da previsão hora a hora do Open-Meteo. Os avisos do IPMA só existem para cerca de 3 dias.
 - **Fuso horário**: a hora servida em `/hora` é a de Portugal continental. Nos Açores, o relógio da página fica uma hora adiantado, mas os dados meteorológicos continuam certos.
 - **Memória**: o HTML é guardado como `bytes` e enviado em blocos de 1 KB. Depois de cada pedido é chamado o `gc.collect()`.
+
+## 🛠️ Problemas comuns
+
+| Sintoma na consola | O que fazer |
+|---|---|
+| `ImportError: no module named 'secrets'` | O `secrets.py` não está gravado no Pico. Envia-o com *Upload file to Pico*. |
+| Fica em `A ligar ao Wi-Fi...` | Confirma o nome e a palavra-passe no `secrets.py` e que a rede é de 2,4 GHz. |
+| `OSError: [Errno 98] EADDRINUSE` | A porta 80 ainda está ocupada pela execução anterior. Faz um soft reset (`Ctrl+D` no REPL) e corre de novo. |
+| `Falha NTP: ...` | A hora fica por acertar até à tentativa seguinte (1 hora depois). Normalmente é uma falha de rede passageira. |
+| `Erro: ...` | Um erro real ao responder a um pedido, por exemplo na ponte para o IPMA. As ligações vazias do browser não geram este erro. |
 
 ## 📁 Estrutura
 
