@@ -108,7 +108,7 @@ Não precisa de sensores: todos os dados vêm das APIs públicas.
    PASSWORD = "palavra_passe"
    ```
    O `secrets.py` está no `.gitignore` e nunca vai para o GitHub.
-4. **Enviar o `secrets.py` e o `main.py` para o Pico**, com *MicroPico: Upload project to Pico* ou com o `mpremote`:
+4. **Enviar o `secrets.py` e o `main.py` para o Pico**, pelo VS Code (ver [Usar com o VS Code](#-usar-com-o-vs-code)) ou com o `mpremote`:
    ```bash
    mpremote cp secrets.py :secrets.py
    mpremote cp main.py :main.py
@@ -126,6 +126,59 @@ Não precisa de sensores: todos os dados vêm das APIs públicas.
 Como o ficheiro se chama `main.py`, o Pico arranca a estação sozinho sempre que é ligado à corrente.
 
 > 🔐 **Sobre a palavra-passe do Wi-Fi:** o `secrets.py` fica guardado no Pico em texto simples. Encriptá-lo não ajudaria, porque a chave para o decifrar teria de estar no mesmo sítio. Pela rede ninguém lhe chega, porque o servidor não dá acesso a ficheiros. Mas quem tiver o Pico na mão consegue lê-la. Por isso, o mais seguro é ligar o Pico à **rede de convidados ou a uma rede IoT** do router.
+
+## 💻 Usar com o VS Code
+
+A forma mais simples de trabalhar com o projeto é o **VS Code** com a extensão **MicroPico**.
+
+### 1. Preparar (uma única vez)
+
+1. Instala o [VS Code](https://code.visualstudio.com/).
+2. Abre a pasta do projeto (*File → Open Folder…*). O VS Code sugere as extensões recomendadas, que estão em `.vscode/extensions.json`. Aceita-as, ou instala pelo menos:
+   - **MicroPico** (`paulober.pico-w-go`): liga o VS Code ao Pico;
+   - **Python** e **Pylance**: dão autocompletar e verificação do código.
+3. Liga o Pico por USB. Na barra de baixo deve aparecer **"Pico Connected"**. Se não aparecer, faz `Ctrl+Shift+P` → **MicroPico: Connect**.
+4. Cria o `secrets.py` a partir do `secrets.example.py` (ver [Instalação](#-instalação)). Depois, no explorador de ficheiros, faz botão direito no `secrets.py` → **Upload file to Pico**.
+
+> No Windows, abre a pasta no VS Code normal e não em modo WSL (*Remote - WSL*). Em WSL, o MicroPico não vê a porta COM do Pico.
+
+### 2. Testar sem gravar
+
+Com o `main.py` aberto, carrega em **▷ Run** na barra de baixo, ou faz `Ctrl+Shift+P` → **MicroPico: Run current file on Pico**.
+
+- O código corre só em RAM. Desligar o Pico apaga-o, e o `main.py` que estiver gravado na placa não é alterado.
+- A saída aparece no terminal **vREPL**, incluindo o endereço `http://…` da página.
+- Para parar, carrega em **□ Stop**.
+- Para correr outra vez depois de alterares o código, faz **Stop** e depois **Run**. Recarrega a página no browser com `Ctrl+F5`.
+
+### 3. Gravar no Pico (arranque automático)
+
+Quando estiver tudo a funcionar, grava os ficheiros no Pico para que a estação arranque sozinha ao ligar à corrente:
+
+- `Ctrl+Shift+P` → **MicroPico: Upload project to Pico**, que envia os ficheiros do projeto, incluindo o `secrets.py`;
+- ou, só para um ficheiro: botão direito no `main.py` → **Upload file to Pico**.
+
+Depois, faz `Ctrl+Shift+P` → **MicroPico: Reset → Hard reset**, ou desliga e volta a ligar o Pico. A partir daí funciona com qualquer carregador USB, sem PC.
+
+### 4. Comandos úteis
+
+| Comando (`Ctrl+Shift+P`) | Para quê |
+|---|---|
+| **MicroPico: Connect / Disconnect** | Ligar ou libertar a porta do Pico. Só um programa de cada vez pode usar a porta série. |
+| **MicroPico: Run current file on Pico** | Testar o ficheiro aberto sem o gravar. |
+| **MicroPico: Stop execution** | Parar o programa que está a correr. |
+| **MicroPico: Upload project to Pico** | Gravar o projeto na placa. |
+| **MicroPico: Reset → Soft / Hard reset** | Reiniciar o Pico. O hard reset volta a correr o `main.py` gravado. |
+| **MicroPico: Download project from Pico** | Copiar para o PC os ficheiros que estão na placa. |
+
+### 5. Git e GitHub pelo VS Code
+
+O separador **Source Control** (`Ctrl+Shift+G`) chega para o dia a dia:
+
+1. Escreve uma mensagem e carrega em **Commit**.
+2. Carrega em **Sync Changes** para enviar para o GitHub.
+
+O `secrets.py` nunca aparece na lista de alterações, porque está no `.gitignore`. No Windows, o VS Code precisa do [Git para Windows](https://git-scm.com/download/win) instalado.
 
 ## ⚙️ Personalização
 
