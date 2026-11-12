@@ -7,7 +7,7 @@
 #      browser não conseguir ir diretamente à API por causa de CORS)
 #
 # Tudo o resto (Open-Meteo, qualidade do ar, fontes) é carregado pelo browser,
-# por isso o Pico só tem de guardar e enviar ~54 KB de HTML.
+# por isso o Pico só tem de guardar e enviar ~61 KB de HTML.
 
 import gc, network, ntptime, socket, ssl, time
 
@@ -791,16 +791,77 @@ function desenharVestir(v) {
   $("tit-vestir").textContent = "👕 O que vestir" + (v.hoje ? "" : " · " + diaLongo(v.k));
   $("vestir-quando").textContent = v.hoje ? "Para as próximas 12 horas" : "Para " + diaLongo(v.k) + ", das 8h às 22h";
   const fx = `sensação entre ${R(smin)}° e ${R(smax)}°`;
-  if (smin <= 8) r.push(["🧥", "Casaco a sério", fx + ". Não é altura de armar em forte."]);
-  else if (smin <= 15) r.push(["🧶", "Camisola ou casaco leve", fx + ". A avó tinha razão."]);
-  else if (smax >= 28) r.push(["🩳", "Calções e t-shirt", fx + ". Fresquinho é que se está bem."]);
-  else r.push(["👕", "T-shirt e um casaquinho", fx + ". Dia de camadas."]);
-  if (smin <= 5) r.push(["🧣", "Cachecol e gorro", "Orelhas agradecem."]);
-  if (pmax >= 40 || (v.hoje ? v.c.precipitation > 0 : v.chuva)) r.push(["☂️", "Guarda-chuva", `Até ${pmax}% de probabilidade de chuva.`]);
-  if (pmax >= 40 && gmax >= 50) r.push(["🧥", "Impermeável em vez de guarda-chuva", `Rajadas até ${R(gmax)} km/h viram-no do avesso.`]);
-  if (uvmax >= 6) r.push(["🧴", "Protetor solar", `UV até ${R(uvmax)} (${uvNivel(uvmax).toLowerCase()}). Ninguém quer ficar cor de camarão.`]);
-  if (uvmax >= 3 && pmax < 40) r.push(["🕶️", "Óculos de sol", `UV até ${R(uvmax)}. Estilo garantido.`]);
-  if (r.length === 1) r.push(["😎", "Mais nada", "Sai à rua sem medo."]);
+  const chove = pmax >= 40 || (v.hoje ? v.c.precipitation > 0 : v.chuva), amp = smax - smin;
+  // Variedade: cada sugestão tem várias versões. A escolha depende do dia, por isso
+  // muda de dia para dia, mas não salta a cada atualização da página.
+  let sem = dataDe(v.k).getDate() + dataDe(v.k).getMonth() * 31;
+  const p = (...ops) => { const o = ops[sem++ % ops.length]; r.push(o); };
+  const uvTxt = `UV até ${R(uvmax)} (${uvNivel(uvmax).toLowerCase()})`;
+  // 1) Parte de cima: decide-se pela hora mais fria do período
+  if (smin <= 3) p(["🧥", "Casaco quente e camisola grossa", fx + ". Não é altura de armar em forte."],
+                   ["🧥", "Kispo e camisola de lã", fx + ". Modo boneco de neve."],
+                   ["🧥", "Sobretudo e camisola de gola alta", fx + ". Elegante e quentinho."]);
+  else if (smin <= 8) p(["🧥", "Casaco e camisola", fx + ". A avó tinha razão."],
+                        ["🧥", "Casaco acolchoado e sweat", fx + ". Fecha o fecho até cima."],
+                        ["🧥", "Parka e camisola de malha", fx + ". Conforto acima de tudo."]);
+  else if (smin <= 13) p(["🧥", "Blusão ou casaco leve", fx + ". Com uma camisola fina por baixo."],
+                         ["🧥", "Casaco de ganga e camisola fina", fx + ". Clássico que nunca falha."],
+                         ["🧥", "Gabardina leve e camisa", fx + ". Ar de detetive incluído."]);
+  else if (smin <= 17) p(["🧶", "Camisola ou sweat", fx + ". Chega e sobra."],
+                         ["🧶", "Camisola fina de malha", fx + ". Nem mais, nem menos."],
+                         ["👕", "Camisa de manga comprida e colete", fx + ". O colete é opcional, o estilo não."]);
+  else if (smin <= 21) p(["👕", "T-shirt e um casaquinho à mão", fx + ". Para quando arrefecer."],
+                         ["👕", "Polo e uma sweat na mochila", fx + ". Mais vale prevenir."],
+                         ["👚", "Camisa leve de manga comprida", fx + ". Arregaça as mangas se aquecer."]);
+  else p(["👕", "T-shirt ou camisa fresca", fx + ". Tecidos leves, que hoje aquece."],
+         ["👕", "Camisa de linho ou t-shirt de algodão", fx + ". Quanto mais leve, melhor."],
+         ["🎽", "Top ou t-shirt de alças", fx + ". Ombros ao sol (com protetor!)."]);
+  if (amp >= 8 && smin <= 17) p(["🧅", "Veste-te por camadas", `A sensação sobe ${R(amp)}° ao longo do período. Tira e põe à vontade.`],
+                                ["🧅", "Modo cebola", `De ${R(smin)}° a ${R(smax)}° de sensação: uma camada para cada hora.`]);
+  // 2) Parte de baixo
+  if (smax >= 27 && !chove) p(["🩳", "Calções ou saia", `Sensação até ${R(smax)}°. Pernas ao léu.`],
+                              ["🩳", "Bermudas ou vestido leve", `Sensação até ${R(smax)}°. As calças ficam em casa.`],
+                              ["👗", "Vestido fresco ou calções", `Sensação até ${R(smax)}°. Deixa o ar circular.`]);
+  else if (smin <= 3) p(["👖", "Calças quentes", "Das grossas, que o frio entra por baixo."],
+                        ["👖", "Calças de bombazine", "Quentinhas e com aquele barulhinho ao andar."],
+                        ["👖", "Calças com collants por baixo", "Truque de quem sabe."]);
+  else p(["👖", "Calças", smax >= 24 ? "Das fininhas, que vai aquecer." : "As do costume servem."],
+         ["👖", "Calças de ganga", smax >= 24 ? "Das leves, que a tarde aquece." : "Dão com tudo."],
+         ["👖", smax >= 24 ? "Calças de tecido leve" : "Chinos ou calças de sarja", smax >= 24 ? "Para não cozer as pernas." : "Um toque arranjadinho."]);
+  // 3) Calçado
+  if (chove && pmax >= 70) p(["🥾", "Botas ou calçado impermeável", "Poças à vista. Meias molhadas é que não."],
+                             ["🥾", "Galochas ou botas", "Para saltar nas poças sem remorsos."],
+                             ["🥾", "Botins impermeáveis", "Pés secos, dia feliz."]);
+  else if (smax >= 28 && !chove) p(["🩴", "Sandálias ou sapatos frescos", "Os pés também merecem arejar."],
+                                   ["🩴", "Chinelos ou alpercatas", "Modo férias ativado."],
+                                   ["👟", "Sapatilhas de lona", "Leves e fresquinhas."]);
+  else if (smin <= 5) p(["🥾", "Botas ou sapatos forrados", "Com meias grossas, já agora."],
+                        ["🥾", "Botins quentes", "Dedos dos pés agradecem."],
+                        ["👟", "Sapatilhas e meias grossas", "As meias fazem metade do trabalho."]);
+  else p(["👟", "Sapatilhas ou sapatos fechados", chove ? "Fechados, que pode pingar." : "Confortáveis e está feito."],
+         ["👟", "Ténis do dia a dia", chove ? "Evita os de pano, que pode pingar." : "Prontos para tudo."],
+         ["👞", "Sapatos ou mocassins", chove ? "Cuidado com as poças." : "Para andar bem composto."]);
+  // 4) Acessórios
+  if (smin <= 5) p(["🧣", "Cachecol e gorro", "As orelhas agradecem."],
+                   ["🧣", "Cachecol e carapuço", "Pescoço tapado, constipação evitada."],
+                   ["🧣", "Gola e gorro de lã", "Só se veem os olhos, e ainda bem."]);
+  if (smin <= 2) p(["🧤", "Luvas", "Mãos nos bolsos não conta."], ["🧤", "Luvas quentes", "Para conseguires mexer no telemóvel, tira só uma."]);
+  if (chove && gmax >= 50) p(["🧥", "Impermeável com capuz", `Até ${pmax}% de chuva e rajadas de ${R(gmax)} km/h: o guarda-chuva vira-se do avesso.`],
+                             ["🧥", "Capa de chuva", `Rajadas de ${R(gmax)} km/h e ${pmax}% de chuva. O guarda-chuva não sobrevive.`]);
+  else if (chove) p(["☂️", "Guarda-chuva", `Até ${pmax}% de probabilidade de chuva.`],
+                    ["☂️", "Chapéu de chuva", `${pmax}% de probabilidade de pingar. Não o deixes no café.`],
+                    ["🌂", "Guarda-chuva dobrável", `Até ${pmax}% de chuva. Cabe na mochila.`]);
+  else if (gmax >= 45) p(["🌬️", "Corta-vento", `Rajadas até ${R(gmax)} km/h. Segura o chapéu.`],
+                         ["🌬️", "Casaco corta-vento", `Rajadas até ${R(gmax)} km/h. Penteados em risco.`]);
+  if (uvmax >= 8) p(["🧢", "Chapéu ou boné", uvTxt + ". Cabeça à sombra."],
+                    ["👒", "Chapéu de aba larga", uvTxt + ". Sombra portátil."],
+                    ["🧢", "Boné ou panamá", uvTxt + ". A careca agradece."]);
+  if (uvmax >= 6) p(["🧴", "Protetor solar", uvTxt + ". Ninguém quer ficar cor de camarão."],
+                    ["🧴", "Protetor solar (e repõe!)", uvTxt + ". De duas em duas horas."],
+                    ["🧴", "Creme protetor", uvTxt + ". Nariz e orelhas também contam."]);
+  if (uvmax >= 3 && pmax < 40) p(["😎", "Óculos de sol", `UV até ${R(uvmax)}. Estilo garantido.`],
+                                 ["😎", "Óculos escuros", `UV até ${R(uvmax)}. Ar de estrela de cinema.`],
+                                 ["😎", "Óculos de sol", `UV até ${R(uvmax)}. Os olhos também se queimam.`]);
   $("vestir").innerHTML = r.map(x => `<li><span class="e">${x[0]}</span><div>${x[1]}<small>${x[2]}</small></div></li>`).join("");
 }
 

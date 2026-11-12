@@ -81,7 +81,7 @@ Nos cartões da previsão a 5 dias do IPMA, cada dia tem uma etiqueta, escolhida
 
 ## 🧠 Como funciona
 
-Para poupar RAM, o Pico faz o mínimo possível: guarda e envia ~54 KB de HTML, e é o browser que vai buscar quase todos os dados.
+Para poupar RAM, o Pico faz o mínimo possível: guarda e envia ~61 KB de HTML, e é o browser que vai buscar quase todos os dados.
 
 ```mermaid
 flowchart LR
