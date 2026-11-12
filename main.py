@@ -600,6 +600,9 @@ function desenharChips() {
          `${ic} ${nome} <small>${R(d.temperature_2m_max[k])}°/${R(d.temperature_2m_min[k])}°</small></button>`;
   }
   $("chips").innerHTML = s;
+  const barra = $("chips"), on = barra.querySelector(".chip.on");   // mantém o dia escolhido visível
+  if (on) barra.scrollLeft += on.getBoundingClientRect().left - barra.getBoundingClientRect().left -
+                             (barra.clientWidth - on.offsetWidth) / 2;
 }
 
 /* ---------- Modos: fundo, carimbo e acessórios do Galo Zé ---------- */
@@ -898,14 +901,14 @@ function desenharAvisos(v) {
 }
 
 /* ---------- O Galo Zé fala (piadas com números reais) ---------- */
-function piadasAgora(v, L) {
+function piadasAgora(v, U, L) {      // U = mau tempo (dito primeiro); L = o resto
   const c = v.c, d = tempo.daily, t = R(c.temperature_2m), s = R(v.s), w = c.weather_code;
-  if (w >= 95) L.push(`Trovoada em ${local.local}! Até eu, que canto às 6 da manhã, fico caladinho.`);
-  if (ehNeve(w)) L.push(`Neve com ${t}°?! Tenho as patas geladas e as penas em pé.`);
-  if (v.chuva) L.push(`Está a chover (${c.precipitation} mm agora). Galo molhado vira canja: leva guarda-chuva!`);
+  if (w >= 95) U.push(`Trovoada em ${local.local}! Até eu, que canto às 6 da manhã, fico caladinho.`);
+  if (ehNeve(w)) U.push(`Neve com ${t}°?! Tenho as patas geladas e as penas em pé.`);
+  if (v.chuva) U.push(`Está a chover (${c.precipitation} mm agora). Galo molhado vira canja: leva guarda-chuva!`);
   else if (v.pmax >= 50) L.push(`${v.pmax}% de probabilidade de chuva nas próximas 6 horas. Depois não digas que não avisei!`);
   if (ehNevoa(w)) L.push(`Nevoeiro em ${local.local}… se calhar é hoje que o D. Sebastião volta.`);
-  if (c.wind_gusts_10m >= 50) L.push(`Rajadas de ${R(c.wind_gusts_10m)} km/h! Como bom cata-vento, já dei três voltas e estou tonto.`);
+  if (c.wind_gusts_10m >= 50) U.push(`Rajadas de ${R(c.wind_gusts_10m)} km/h! Como bom cata-vento, já dei três voltas e estou tonto.`);
   if (c.wind_speed_10m >= 8 && c.wind_gusts_10m < 50)
     L.push(`Vento de ${rumo(c.wind_direction_10m)} a ${R(c.wind_speed_10m)} km/h. Sei disto porque sou, literalmente, um cata-vento.`);
   if (s >= 32) L.push(`Sensação de ${s}°. Mais um bocadinho e passo de galo a frango de churrasco.`);
@@ -922,15 +925,15 @@ function piadasAgora(v, L) {
   if (v.tmax - v.tmin >= 12) L.push(`Hoje vai de ${R(v.tmin)}° a ${R(v.tmax)}°. Veste-te à cebola: camadas!`);
 }
 
-function piadasDia(v, L) {
+function piadasDia(v, U, L) {
   const c = v.c, k = v.k, t = R(v.tmax), n = R(v.tmin), s = R(v.s), w = c.weather_code;
   const q = k === 1 ? "amanhã" : "para " + diaNome(k), Q = cap(q);
-  if (w >= 95) L.push(`${Q} há trovoada à vista em ${local.local}. Vou passar o dia escondido no galinheiro.`);
-  if (ehNeve(w)) L.push(`Neve prevista ${q}?! Vou já tirar o gorro da gaveta.`);
-  if (v.chuva) L.push(`${Q} vai chover (${c.precipitation} mm previstos, ${v.pmax}% de probabilidade). Galo molhado vira canja: guarda-chuva na mochila!`);
+  if (w >= 95) U.push(`${Q} há trovoada à vista em ${local.local}. Vou passar o dia escondido no galinheiro.`);
+  if (ehNeve(w)) U.push(`Neve prevista ${q}?! Vou já tirar o gorro da gaveta.`);
+  if (v.chuva) U.push(`${Q} vai chover (${c.precipitation} mm previstos, ${v.pmax}% de probabilidade). Galo molhado vira canja: guarda-chuva na mochila!`);
   else if (v.pmax >= 40) L.push(`${Q} há ${v.pmax}% de probabilidade de chuva. Depois não digas que não avisei!`);
   if (ehNevoa(w)) L.push(`${Q} há nevoeiro previsto em ${local.local}… será desta que o D. Sebastião volta?`);
-  if (c.wind_gusts_10m >= 50) L.push(`${Q} as rajadas podem chegar aos ${R(c.wind_gusts_10m)} km/h. Já estou a treinar piruetas de cata-vento.`);
+  if (c.wind_gusts_10m >= 50) U.push(`${Q} as rajadas podem chegar aos ${R(c.wind_gusts_10m)} km/h. Já estou a treinar piruetas de cata-vento.`);
   if (s >= 32) L.push(`Máxima de ${t}° ${q} (sensação de ${s}°). Vou passar de galo a frango de churrasco.`);
   else if (s >= 26) L.push(`${Q} sobe até aos ${t}°. Cheira a praia e a bola de Berlim!`);
   else if (s >= 20) L.push(`${t}° de máxima ${q}. Tempo perfeito para cantar à janela.`);
@@ -944,19 +947,21 @@ function piadasDia(v, L) {
 }
 
 function falar(v) {
-  const L = [];
+  const A = [], U = [], L = [];        // avisos, mau tempo, o resto (por esta ordem de prioridade)
   if (avisosAtivos.length) {
     const w = avisosAtivos[0];
-    L.push(`Agora a sério: há aviso ${(NIVEL[w.awarenessLevelID] || "").toLowerCase()} de ${w.awarenessTypeName.toLowerCase()} ` +
+    A.push(`Agora a sério: há aviso ${(NIVEL[w.awarenessLevelID] || "").toLowerCase()} de ${w.awarenessTypeName.toLowerCase()} ` +
            (v && !v.hoje ? `de ${fmt(w.startTime)} ` : "") + `até ${fmt(w.endTime)}. Tem cuidado!`);
   }
-  if (v) (v.hoje ? piadasAgora : piadasDia)(v, L);
+  if (v) (v.hoje ? piadasAgora : piadasDia)(v, U, L);
   const a = arDe(v || {k: 0, hoje: true});
   if (a && a.european_aqi > 60)
     L.push(v && !v.hoje ? `Qualidade do ar prevista até ${R(a.european_aqi)} nesse dia. Corre só atrás do autocarro.`
                         : `Índice de qualidade do ar a ${R(a.european_aqi)}. Hoje corre só atrás do autocarro.`);
-  if (!L.length) L.push("Hoje não tenho dados nem piadas. Volta daqui a pouco!");
-  piadas = L; iPiada = avisosAtivos.length ? 0 : Math.floor(Math.random() * L.length);
+  piadas = [...A, ...U, ...L];
+  if (!piadas.length) piadas.push("Hoje não tenho dados nem piadas. Volta daqui a pouco!");
+  // Com avisos ou mau tempo, o Galo Zé começa pelo mais importante; senão, escolhe uma ao acaso.
+  iPiada = A.length || U.length ? 0 : Math.floor(Math.random() * piadas.length);
   $("fala").textContent = piadas[iPiada];
 }
 
