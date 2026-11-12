@@ -6,6 +6,8 @@ O Pico liga-se ao Wi-Fi, acerta a hora por NTP e serve uma página com o estado 
 
 > As piadas são do Galo Zé, os números não.
 
+![Galo Meteo no computador, de noite: o Galo Zé a dormir de touca e um aviso amarelo do IPMA](docs/imagens/desktop-agora.png)
+
 > [!WARNING]
 > Este é um projeto pessoal **feito para divertir**. Os dados apresentados **não têm qualquer garantia** e **não devem ser usados em contexto profissional**. Lê o **Aviso legal** no fim deste ficheiro.
 
@@ -27,6 +29,18 @@ O Pico liga-se ao Wi-Fi, acerta a hora por NTP e serve uma página com o estado 
 - **Previsão a 5 dias** do IPMA.
 - **Escolha do local**: todos os distritos e ilhas do IPMA. A escolha fica guardada no browser e, por omissão, o local é Lisboa.
 - Funciona em telemóvel e computador, e respeita a opção `prefers-reduced-motion`.
+
+## 📸 Capturas de ecrã
+
+**Previsão para um dia de trovoada:** fundo roxo, carimbo "TROVÕES!" e o Galo Zé de guarda-chuva, com raio e vento.
+
+![Previsão para um dia de trovoada no computador](docs/imagens/desktop-trovoada.png)
+
+**No telemóvel:** um dia de chuva e um dia nublado e ameno.
+
+<p align="center">
+  <img src="docs/imagens/telemovel.png" alt="Galo Meteo no telemóvel: previsão de chuva para amanhã e de tempo ameno para domingo" width="600">
+</p>
 
 ## 🎭 Modos do Galo Zé
 
@@ -228,6 +242,7 @@ Nenhuma destas APIs precisa de chave.
 ├── secrets.example.py      # modelo das credenciais do Wi-Fi
 ├── secrets.py              # as tuas credenciais (não vai para o git)
 ├── .gitignore              # deixa o secrets.py de fora
+├── docs/imagens/           # capturas de ecrã usadas neste README
 ├── LICENSE                 # licença MIT
 ├── .micropico              # marca a pasta como projeto MicroPico
 └── .vscode/                # definições e extensões recomendadas do VS Code
