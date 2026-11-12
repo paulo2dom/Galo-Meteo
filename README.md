@@ -229,7 +229,7 @@ Nenhuma destas APIs precisa de chave.
 | Sintoma na consola | O que fazer |
 |---|---|
 | `ImportError: no module named 'secrets'` | O `secrets.py` não está gravado no Pico. Envia-o com *Upload file to Pico*. |
-| Fica em `A ligar ao Wi-Fi...` | Confirma o nome e a palavra-passe no `secrets.py` e que a rede é de 2,4 GHz. |
+| `Não ligou: ...` depois de `A ligar ao Wi-Fi` | A consola indica o motivo (rede não encontrada, palavra-passe recusada, sem IP) e as redes que o Pico vê. Confirma o `secrets.py` gravado no Pico e que a rede é de 2,4 GHz. O Pico volta a tentar sozinho. |
 | `OSError: [Errno 98] EADDRINUSE` | A porta 80 ainda está ocupada pela execução anterior. Faz um soft reset (`Ctrl+D` no REPL) e corre de novo. |
 | `Falha NTP: ...` | A hora fica por acertar até à tentativa seguinte (1 hora depois). Normalmente é uma falha de rede passageira. |
 | `Erro: ...` | Um erro real ao responder a um pedido, por exemplo na ponte para o IPMA. As ligações vazias do browser não geram este erro. |

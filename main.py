@@ -21,11 +21,37 @@ except ImportError:
 # ---------- Wi-Fi ----------
 network.hostname("meteo")            # em muitas redes fica em http://meteo.local
 wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-wlan.connect(SSID, PASSWORD)
-print("A ligar ao Wi-Fi...")
-while not wlan.isconnected():
-    time.sleep(0.5)
+ESTADOS = {0: "sem ligação", 1: "a associar-se à rede", 2: "associado, mas sem endereço IP",
+           3: "ligado", -1: "a ligação falhou", -2: "rede não encontrada", -3: "palavra-passe recusada"}
+
+def ligar_wifi():
+    tentativa = 0
+    while True:
+        tentativa += 1
+        wlan.active(False)               # reinicia o chip Wi-Fi: evita ficar preso depois de Stop/Run
+        time.sleep(0.5)
+        wlan.active(True)
+        print("A ligar ao Wi-Fi '%s' (tentativa %d)..." % (SSID, tentativa))
+        wlan.connect(SSID, PASSWORD)
+        for _ in range(40):              # espera até 20 s
+            if wlan.isconnected():
+                return
+            if wlan.status() < 0:        # falha definitiva: não vale a pena esperar
+                break
+            time.sleep(0.5)
+        est = wlan.status()
+        print("  Não ligou: %s (estado %d)." % (ESTADOS.get(est, "desconhecido"), est))
+        try:                             # mostra as redes que o Pico consegue ver
+            redes = sorted(set(r[0].decode() for r in wlan.scan() if r[0]))
+            print("  Redes à vista:", ", ".join(redes) if redes else "nenhuma")
+            if SSID not in redes:
+                print("  A rede '%s' não aparece. Confirma o nome no secrets.py e a banda de 2,4 GHz." % SSID)
+        except Exception as e:
+            print("  Não foi possível procurar redes:", e)
+        wlan.disconnect()
+        time.sleep(3)
+
+ligar_wifi()
 print("Ligado! Abre http://%s no browser" % wlan.ifconfig()[0])
 
 # ---------- NTP ----------
