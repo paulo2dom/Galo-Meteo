@@ -930,19 +930,28 @@ function desenharAr(v) {
 /* ---------- Previsão 5 dias (IPMA) ---------- */
 function legendaDia(d, id) {
   const p = +d.precipitaProb, tx = +d.tMax, tn = +d.tMin;
-  if ([19,20,23].includes(id)) return "Trovões à vista";
-  if ([18,28,29,30].includes(id)) return "Neve à vista";
-  if (p >= 70) return "Dia de galochas";
-  if (p >= 40) return "Talvez pingue";
-  if (+d.classWindSpeed >= 3) return "Ventania";
-  if ([16,17,26].includes(id)) return "Dia de nevoeiro";
-  if (tx >= 32) return "Modo forno";
-  if (tx >= 26) return "Cheira a praia";
-  if (tn <= 3) return "Geadinha";
-  if (tx >= 20) return id <= 2 ? "Sol sem desculpas" : "Perfeitinho";
-  if (tx >= 15) return "Ameno";
-  if (tx >= 10) return "Fresquinho";
-  return "Frio de rachar";
+  // Cada etiqueta tem várias versões; a escolha depende da data, para não se repetir em dias seguidos.
+  const n = +d.forecastDate.slice(8, 10) + +d.forecastDate.slice(5, 7), e = (...ops) => ops[n % ops.length];
+  if ([19,20,23].includes(id)) return e("Trovões à vista", "Raios e coriscos", "Dia de trovoada");
+  if ([18,28,29,30].includes(id)) return e("Neve à vista", "Dia de boneco de neve", "Flocos a cair");
+  if (id === 21) return e("Granizo à vista", "Pedrinhas do céu");
+  if (p >= 40 || [6,7,8,9,10,11,12,13,14,15].includes(id)) {       // chuva: a etiqueta segue a intensidade do IPMA
+    if ([8,11,14].includes(id)) return e("Chuva a potes", "Dilúvio à vista", "Chove a cântaros");
+    if (p < 40) return e("Uns pingos, talvez", "Pingo aqui, pingo ali");
+    if (p < 70) return e("Talvez pingue", "Leva o guarda-chuva", "Chuva sim, chuva não");
+    if ([6,7].includes(id)) return e("Aguaceiros à vista", "Chove e para", "Sol e chuva à vez");
+    if ([10,13,15].includes(id)) return e("Chuvinha miúda", "Molha-tolos", "Chuva de molha-parvos");
+    return e("Dia de galochas", "Dia de guarda-chuva", "Chuva o dia todo");
+  }
+  if (+d.classWindSpeed >= 3) return e("Ventania", "Segura o chapéu", "Dia de despentear");
+  if ([16,17,26].includes(id)) return e("Dia de nevoeiro", "Não se vê um palmo", "Névoa cerrada");
+  if (tx >= 32) return e("Modo forno", "Dia de grelha", "Calor de rachar");
+  if (tx >= 26) return e("Cheira a praia", "Dia de esplanada", "Calorzinho bom");
+  if (tn <= 3) return e("Geadinha", "Manhã gelada", "Vidros com gelo");
+  if (tx >= 20) return id <= 2 ? e("Sol sem desculpas", "Dia de passeio", "Céu de postal") : e("Perfeitinho", "Dia simpático", "Nada a apontar");
+  if (tx >= 15) return e("Ameno", "Nem frio nem calor", "Dia tranquilo");
+  if (tx >= 10) return e("Fresquinho", "Dia de casaquinho", "Fresco mas bom");
+  return e("Frio de rachar", "Dia de lareira", "Brrr!");
 }
 
 function desenharDias() {

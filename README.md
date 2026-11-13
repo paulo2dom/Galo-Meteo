@@ -77,7 +77,7 @@ Para além do carimbo, o Galo Zé junta acessórios conforme o tempo:
 | névoa | nevoeiro |
 | touca e "zzz" | de noite, só em **Agora** |
 
-Nos cartões da previsão a 5 dias do IPMA, cada dia tem uma etiqueta, escolhida por esta ordem: *Trovões à vista*, *Neve à vista*, *Dia de galochas*, *Talvez pingue*, *Ventania*, *Dia de nevoeiro*, *Modo forno*, *Cheira a praia*, *Geadinha*, *Sol sem desculpas*/*Perfeitinho*, *Ameno*, *Fresquinho* e *Frio de rachar*.
+Nos cartões da previsão a 5 dias do IPMA, cada dia tem uma etiqueta, escolhida por esta ordem: trovoada, neve, granizo, chuva, vento forte, nevoeiro e, por fim, a temperatura (*Modo forno*, *Cheira a praia*, *Geadinha*, *Sol sem desculpas*/*Perfeitinho*, *Ameno*, *Fresquinho*, *Frio de rachar*). Na chuva, a etiqueta segue a intensidade indicada pelo IPMA: *Aguaceiros à vista*, *Chuvinha miúda*, *Dia de galochas* ou *Chuva a potes*. Cada etiqueta tem duas ou três versões, que alternam com a data para não se repetirem em dias seguidos.
 
 ## 🧠 Como funciona
 
